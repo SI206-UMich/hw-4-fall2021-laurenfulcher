@@ -28,7 +28,8 @@ class Customer:
     # Submit_order takes a cashier, a stall and an amount as parameters, 
     # it deducts the amount from the customer’s wallet and calls the receive_payment method on the cashier object
     def submit_order(self, cashier, stall, amount): 
-        pass
+        self.wallet = self.wallet - amount
+        cashier.receive_payment(stall, amount)
 
     # The __str__ method prints the customer's information.    
     def __str__(self):
@@ -46,7 +47,10 @@ class Cashier:
 
     # Whether the stall is in the cashier's directory
     def has_stall(self, stall):
-        return stall in self.directory
+        if stall in self.directory:
+            return True
+        else: 
+            return False
 
     # Adds a stall to the directory of the cashier.
     def add_stall(self, new_stall):
@@ -72,8 +76,38 @@ class Cashier:
 ## Complete the Stall class here following the instructions in HW_4_instructions_rubric
 class Stall:
     
-    pass
+    def __init__(self, name, inventory, cost = 7, earnings = 0):
+        self.name = name
+        self.inventory = inventory
+        self.cost = cost
+        self.earnings = earnings
 
+    def process_order(self, food_name, quantity):
+        if self.has_item(food_name, quantity):
+            self.inventory[food_name] = self.inventory[food_name] - quantity
+            self.earnings = self.earnings + (quantity * self.cost)
+        else:
+            pass
+
+    def has_item(self, food_name, quantity):
+        if not(food_name in self.inventory):
+            return False
+        elif self.inventory[food_name] >= quantity:
+            return True
+        else:
+            return False
+
+    def stock_up(self, food_name, quantity):
+        if food_name in self.inventory:
+            self.inventory[food_name] = self.inventory[food_name] + quantity
+        else: 
+            self.inventory[food_name] = quantity
+
+    def compute_cost(self, quantity):
+        return quantity * self.cost
+
+    def __str__(self):
+        print("Hello, we are " + self.name + ". This is the current menu " + self.inventory + ". We charge $" + self.cost + " per item. We have $" + self.earnings + " in total.")
 
 class TestAllMethods(unittest.TestCase):
     
@@ -147,8 +181,8 @@ class TestAllMethods(unittest.TestCase):
     def test_compute_cost(self):
         #what's wrong with the following statements?
         #can you correct them?
-        self.assertEqual(self.s1.compute_cost(self.s1,5), 51)
-        self.assertEqual(self.s3.compute_cost(self.s3,6), 45)
+        self.assertEqual(self.s1.compute_cost(5), 50)
+        self.assertEqual(self.s3.compute_cost(6), 42)
 
 	# Check that the stall can properly see when it is empty
     def test_has_item(self):
@@ -179,13 +213,35 @@ class TestAllMethods(unittest.TestCase):
 ### Write main function
 def main():
     #Create different objects 
+    #two inventories
+    invent_1 = {'Walking Taco': 15, 'Burrito': 10, 'Quesadilla': 5}
+    invent_2 = {'Smoothie': 8, 'Banana Bread': 20, 'Parfait': 14}
+
+    #three customer objects
+    cust_1 = Customer("Adam", 150)
+    cust_2 = Customer("Beth", 105)
+    cust_3 = Customer("Charlie", 75)
+
+    #two stall objects
+    stall_1 = Stall("Sabrosa", invent_1, cost=6)
+    stall_2 = Stall("Morningside", invent_2, cost=10)
+
+    # two cashier objects
+    cashier_1 = Cashier("Dave", [stall_1])
+    cashier_2 = Cashier("Eddie", [stall_1, stall_2])
 
     #Try all cases in the validate_order function
     #Below you need to have *each customer instance* try the four cases
     #case 1: the cashier does not have the stall 
-    
+    cust_1.validate_order(cashier_1, stall_2, "Parfait", 12)
+    cust_2.validate_order(cashier_1, stall_2, "Parfait", 12)
+    cust_3.validate_order(cashier_1, stall_2, "Banana Bread", 3)
+
     #case 2: the casher has the stall, but not enough ordered food or the ordered food item
-    
+    cust_1.validate_order(cashier_1, stall_1, "Parfait", 2)
+    cust_2.validate_order(cashier_2, stall_2, "Banana Bread", 30)
+    cust_3.validate_order(cashier_2, stall_1, "Quesadilla", 6)
+
     #case 3: the customer does not have enough money to pay for the order: 
     
     #case 4: the customer successfully places an order
