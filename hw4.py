@@ -97,17 +97,22 @@ class Stall:
         else:
             return False
 
-    def stock_up(self, food_name, quantity):
+    def stock_up(self, food_name, quantity):        
         if food_name in self.inventory:
-            self.inventory[food_name] = self.inventory[food_name] + quantity
+           self.inventory[food_name] = self.inventory[food_name] + quantity
         else: 
             self.inventory[food_name] = quantity
 
     def compute_cost(self, quantity):
-        return quantity * self.cost
+        return (quantity * self.cost)
 
     def __str__(self):
-        return "Hello, we are " + self.name + ". This is the current menu " + str(self.inventory) + ". We charge $" + str(self.cost) + " per item. We have $" + str(self.earnings) + " in total."
+        keys = ""
+        for item in self.inventory:
+            keys = keys + item + ", "
+        keys = keys[0:-2]
+        keys = keys.lower()
+        return "Hello, we are " + self.name + ". This is the current menu " + keys + ". We charge $" + str(self.cost) + " per item. We have $" + str(self.earnings) + " in total."
 
 class TestAllMethods(unittest.TestCase):
     
@@ -149,7 +154,6 @@ class TestAllMethods(unittest.TestCase):
     def test_stocking(self):
         inventory = {"Burger": 10}
         s4 = Stall("Misc Stall", inventory)
-
 		# Testing whether stall can stock up on items
         self.assertEqual(s4.inventory, {"Burger": 10})
         s4.stock_up("Burger", 30)
@@ -236,9 +240,9 @@ def main():
     invent_2 = {'Smoothie': 8, 'Banana Bread': 20, 'Parfait': 14}
 
     #three customer objects
-    cust_1 = Customer("Adam", 150)
-    cust_2 = Customer("Beth", 105)
-    cust_3 = Customer("Charlie", 75)
+    cust_1 = Customer("Adam", 105)
+    cust_2 = Customer("Beth", 74)
+    cust_3 = Customer("Charlie", 60)
 
     #two stall objects
     stall_1 = Stall("Sabrosa", invent_1, cost=6)
@@ -251,18 +255,28 @@ def main():
     #Try all cases in the validate_order function
     #Below you need to have *each customer instance* try the four cases
     #case 1: the cashier does not have the stall 
+    print("cases where the cashier does not have the stall:")
     cust_1.validate_order(cashier_1, stall_2, "Parfait", 12)
     cust_2.validate_order(cashier_1, stall_2, "Parfait", 12)
     cust_3.validate_order(cashier_1, stall_2, "Banana Bread", 3)
 
     #case 2: the casher has the stall, but not enough ordered food or the ordered food item
+    print("cases where cashier has the stall, but not enough ordered food or the ordered food item:")
     cust_1.validate_order(cashier_1, stall_1, "Parfait", 2)
     cust_2.validate_order(cashier_2, stall_2, "Banana Bread", 30)
     cust_3.validate_order(cashier_2, stall_1, "Quesadilla", 6)
 
     #case 3: the customer does not have enough money to pay for the order: 
-    
+    print("cases where the customer does not have enough money to pay for the order:")
+    cust_1.validate_order(cashier_2, stall_2, "Banana Bread", 11)
+    cust_2.validate_order(cashier_2, stall_2, "Parfait", 9)
+    cust_3.validate_order(cashier_1, stall_1, "Walking Taco", 11)
+
     #case 4: the customer successfully places an order
+    print("cases where the orders go though. Nothing should be printed after this.")
+    cust_1.validate_order(cashier_1, stall_1, "Walking Taco", 2)
+    cust_2.validate_order(cashier_2, stall_1, "Quesadilla", 2)
+    cust_3.validate_order(cashier_2, stall_2, "Banana Bread", 3)
 
     pass
 
