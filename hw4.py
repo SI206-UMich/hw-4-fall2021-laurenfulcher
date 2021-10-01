@@ -204,37 +204,34 @@ class TestAllMethods(unittest.TestCase):
 	# Test validate order
     def test_validate_order(self):
 		# case 1: test if a customer doesn't have enough money in their wallet to order
-        print("test_validate_order case 1:")
+        before_w = self.f1.wallet
         self.f1.validate_order(self.c1, self.s1, "Burger", 20)
-        print("Should print: Don't have enough money for that :( Please reload more money!")
+        self.assertEqual(before_w, self.f1.wallet)
 		# case 2: test if the stall doesn't have enough food left in stock
-        print("test_validate_order case 2:")
-        self.s2.stock_up("Pizza", 2)
-        self.f1.validate_order(self.c2, self.s2, "Pizza", 4)
-        print("Should print: Our stall has run out of Pizza :( Please try a different stall!")
+        inventory = self.s2.inventory["Burger"]
+        self.f2.validate_order(self.c2, self.s2, "Burger", 50)
+        self.assertEqual(inventory, self.s2.inventory['Burger'])
 		# case 3: check if the cashier can order item from that stall
-        print("test_validate_order case 3:")
-        self.s4 = Stall("Extra", {"Pizza":3, "Pasta":45})
-        self.f2.validate_order(self.c2, self.s4, "Taco", 3)
-        print("Should print: Sorry, we don't have that vendor stall. Please try a different one.")
+        stall_item = self.s3.inventory['Taco']
+        self.f1.validate_order(self.c2, self.s3, "Taco", 4)
+        self.assertEqual(stall_item - 4, self.s3.inventory['Taco'])
 
 
     # Test if a customer can add money to their wallet
     def test_reload_money(self):
-        print("test_reload_money: starting with not enough-")
         #validate order with current wallet where they dont have enough
         self.f1.validate_order(self.c1, self.s1, "Burger", 20)
+        self.assertEqual(self.f1.wallet, 100)
         #reload money call
-        print("Adding money now. Customer should have enough to buy 20 Burgers, so 20 will remain in the Stall's inventory.")
         self.f1.reload_money(102)
         #validate again and make sure it works
         self.f1.validate_order(self.c1, self.s1, "Burger", 20)
-        print(self.s1.__str__())
+        self.assertEqual(self.s1.inventory["Burger"], 20)
 
     
 ### Write main function
 def main():
-    #Create different objects 
+    #Create different objects
     #two inventories
     invent_1 = {'Walking Taco': 15, 'Burrito': 10, 'Quesadilla': 5}
     invent_2 = {'Smoothie': 8, 'Banana Bread': 20, 'Parfait': 14}
@@ -254,26 +251,22 @@ def main():
 
     #Try all cases in the validate_order function
     #Below you need to have *each customer instance* try the four cases
-    #case 1: the cashier does not have the stall 
-    print("cases where the cashier does not have the stall:")
+    #case 1: the cashier does not have the stall
     cust_1.validate_order(cashier_1, stall_2, "Parfait", 12)
     cust_2.validate_order(cashier_1, stall_2, "Parfait", 12)
     cust_3.validate_order(cashier_1, stall_2, "Banana Bread", 3)
 
     #case 2: the casher has the stall, but not enough ordered food or the ordered food item
-    print("cases where cashier has the stall, but not enough ordered food or the ordered food item:")
     cust_1.validate_order(cashier_1, stall_1, "Parfait", 2)
     cust_2.validate_order(cashier_2, stall_2, "Banana Bread", 30)
     cust_3.validate_order(cashier_2, stall_1, "Quesadilla", 6)
 
     #case 3: the customer does not have enough money to pay for the order: 
-    print("cases where the customer does not have enough money to pay for the order:")
     cust_1.validate_order(cashier_2, stall_2, "Banana Bread", 11)
     cust_2.validate_order(cashier_2, stall_2, "Parfait", 9)
     cust_3.validate_order(cashier_1, stall_1, "Walking Taco", 11)
 
     #case 4: the customer successfully places an order
-    print("cases where the orders go though. Nothing should be printed after this.")
     cust_1.validate_order(cashier_1, stall_1, "Walking Taco", 2)
     cust_2.validate_order(cashier_2, stall_1, "Quesadilla", 2)
     cust_3.validate_order(cashier_2, stall_2, "Banana Bread", 3)
